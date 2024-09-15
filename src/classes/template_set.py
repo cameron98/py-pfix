@@ -10,6 +10,7 @@ class TemplateSet:
         self.template_id = hexarr2int(4, 6, self.set_bytes)
         self.field_count = hexarr2int(6, 8, self.set_bytes)
         self.template = {}
+        print(f"Template Set received with Template ID: {self.template_id}")
 
     def parse(self):
 
@@ -17,7 +18,6 @@ class TemplateSet:
         packet_cursor = 8
 
         while field_cursor < self.field_count:
-
 
             inf_elem_block = hexarr2int(packet_cursor, packet_cursor+2, self.set_bytes)
             enterprise_bit = '{0:016b}'.format(inf_elem_block)[0]

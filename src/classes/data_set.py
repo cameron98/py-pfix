@@ -8,6 +8,7 @@ class DataSet:
         self.template_id = hexarr2int(0, 2, self.set_bytes)
         self.set_length = hexarr2int(2, 4, self.set_bytes)
         self.data_records = []
+        print(f"Data Set received with template ID: {self.template_id}")
 
     def parse(self, templates, inf_element_data):
         if self.template_id not in templates:
@@ -24,9 +25,6 @@ class DataSet:
 
             while record_count <= records_in_set:
                 data_record = {}
-                print(set_template)
-                print(self.set_bytes)
-                print(f"Set Start: {packet_cursor}")
                 for index in list(set_template.keys()):
                     inf_element_id = set_template[index]["inf_elem_id"]
                     try:
@@ -44,7 +42,6 @@ class DataSet:
                         data = '{:012}'.format(hex(data)[2:].upper())
 
                     data_record[field_name] = data
-                # print(data_record)
                 record_count += 1
                     
                 self.data_records.append(data_record)
