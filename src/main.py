@@ -11,7 +11,6 @@ dataset_buffer_max_len = 100
 
 #Program Storage
 templates = {}
-ipfix_data_records = []
 inf_element_data = load_inf_elements(ipfix_inf_filename)
 dataset_buffer = []
 
@@ -29,10 +28,6 @@ if __name__ == "__main__":
     #Loop to listen to input from socket server
     while True:
         data, addr = sock.recvfrom(4096)
-
-        #Save data to file for debug
-        with open('binary_out', 'wb') as file:
-            file.write(data)
         
         data = list(data.hex())
         packet_data = []
@@ -51,12 +46,12 @@ if __name__ == "__main__":
         
         for set_data in packet_sets["data_sets"]:
             data_set = DataSet(set_data)
-            record = data_set.parse(templates, inf_element_data)
-            if record:
-                ipfix_data_records.append(record)
-                ipfix_json = json.dumps(record)
-                json_outfile.write(ipfix_json)
-                json_outfile.write('\n')
+            records = data_set.parse(templates, inf_element_data)
+            if records:
+                for record in records:
+                    ipfix_json = json.dumps(record)
+                    json_outfile.write(ipfix_json)
+                    json_outfile.write('\n')
             else:
                 if len(dataset_buffer) >= 100:
                     dataset_buffer.pop(0)
@@ -64,11 +59,12 @@ if __name__ == "__main__":
                 print(f"DataSet received with unknown template ID {data_set.template_id}")
 
         for data_set in dataset_buffer:
-            record = data_set.parse(templates, inf_element_data)
-            if record:
-                ipfix_data_records.append(record)
-                ipfix_json = json.dumps(record)
-                json_outfile.write(ipfix_json)
+            records = data_set.parse(templates, inf_element_data)
+            if records:
+                for record in records:
+                    ipfix_json = json.dumps(record)
+                    json_outfile.write(ipfix_json)
+                    json_outfile.write('\n')
                 dataset_buffer.remove(data_set)
 
         
