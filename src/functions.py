@@ -40,8 +40,6 @@ def parse_packet(packet_bytearray):
         "observation_dom_id": hexarr2int(12, 16, packet_bytearray)
     }
 
-    print(header_meta)
-
     packet_sets = {
         "template_sets": [],
         "data_sets": [],
