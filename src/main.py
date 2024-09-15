@@ -56,10 +56,12 @@ if __name__ == "__main__":
                 ipfix_data_records.append(record)
                 ipfix_json = json.dumps(record)
                 json_outfile.write(ipfix_json)
+                json_outfile.write('\n')
             else:
                 if len(dataset_buffer) >= 100:
                     dataset_buffer.pop(0)
                 dataset_buffer.append(data_set)
+                print(f"DataSet received with unknown template ID {data_set.template_id}")
 
         for data_set in dataset_buffer:
             record = data_set.parse(templates, inf_element_data)
@@ -67,9 +69,6 @@ if __name__ == "__main__":
                 ipfix_data_records.append(record)
                 ipfix_json = json.dumps(record)
                 json_outfile.write(ipfix_json)
-            else:
-                if len(dataset_buffer) >= 100:
-                    dataset_buffer.pop(0)
-                dataset_buffer.append(data_set)
+                dataset_buffer.remove(data_set)
 
         
