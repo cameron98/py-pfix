@@ -29,7 +29,10 @@ class DataSet:
                 print(f"Set Start: {packet_cursor}")
                 for index in list(set_template.keys()):
                     inf_element_id = set_template[index]["inf_elem_id"]
-                    field_name = inf_element_data[str(inf_element_id)]["name"]
+                    try:
+                        field_name = inf_element_data[str(inf_element_id)]["name"]
+                    except:
+                        field_name = str(inf_element_id)
                     abstract_data_type = inf_element_data[str(inf_element_id)]["abstract_data_type"]
                     data_len = set_template[index]["field_len"]
                     data = hexarr2int(packet_cursor, packet_cursor+data_len, self.set_bytes)
