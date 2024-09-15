@@ -10,4 +10,6 @@ This project is written wholy in Python and has been tested on Python 3.12. To g
 
 With docker installed and running on your system, spin up the project in one command by adjusting the arguments below to suit your needs:
 
+```
 docker run -d --name py-pfix --mount type=bind,source=/path/on/host,target=/app/out -p 5000:5000/udp cfstuff/py-pfix:v1.0
+```
