@@ -23,8 +23,9 @@ if __name__ == "__main__":
     sock.bind(('0.0.0.0', port))
     print(f"Listening on port {port}")
 
-    json_outfile = open("../out/ipfix_out.json", "w+")
 
+    json_outfile = open("../out/ipfix_out.json", "w+")
+  
     #Loop to listen to input from socket server
     while True:
         data, addr = sock.recvfrom(4096)
