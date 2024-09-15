@@ -2,3 +2,5 @@ __pycache__/
 binary_out
 set_bytes
 *.pyc
+out/*
+*.json
