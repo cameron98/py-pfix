@@ -27,8 +27,6 @@ class DataSet:
                 print(set_template)
                 print(self.set_bytes)
                 print(f"Set Start: {packet_cursor}")
-                # with open("set_bytes", 'w') as file:
-                #     file.write(self.set_bytes)
                 for index in list(set_template.keys()):
                     inf_element_id = set_template[index]["inf_elem_id"]
                     field_name = inf_element_data[str(inf_element_id)]["name"]
@@ -43,7 +41,7 @@ class DataSet:
                         data = '{:012}'.format(hex(data)[2:].upper())
 
                     data_record[field_name] = data
-                print(data_record)
+                # print(data_record)
                 record_count += 1
                     
                 self.data_records.append(data_record)

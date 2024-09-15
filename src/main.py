@@ -2,15 +2,18 @@ import socket
 from functions import *
 from classes.template_set import TemplateSet
 from classes.data_set import DataSet
+import json
 
 #Config Variables
 port = 5000
 ipfix_inf_filename = 'ipfix-information-elements.csv'
+dataset_buffer_max_len = 100
 
 #Program Storage
 templates = {}
 ipfix_data_records = []
 inf_element_data = load_inf_elements(ipfix_inf_filename)
+dataset_buffer = []
 
 if __name__ == "__main__":
 
@@ -20,6 +23,8 @@ if __name__ == "__main__":
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('0.0.0.0', port))
     print(f"Listening on port {port}")
+
+    json_outfile = open("ipfix_out.json", "w+")
 
     #Loop to listen to input from socket server
     while True:
@@ -36,8 +41,6 @@ if __name__ == "__main__":
             packet_data.append("".join(data[a:a+2]))
             a += 2
         
-        # print(packet_data)
-
         #Split the packet into header data,  data sets, template sets and option template sets
         packet_header_data, packet_sets = parse_packet(packet_data)
 
@@ -50,6 +53,13 @@ if __name__ == "__main__":
             record = data_set.parse(templates, inf_element_data)
             if record:
                 ipfix_data_records.append(record)
+                ipfix_json = json.dumps(record)
+                json_outfile.write(ipfix_json)
+            else:
+                if len(dataset_buffer) >= 100:
+                    dataset_buffer.pop(0)
+                dataset_buffer.append(data_set)
+
             pass
         
         print(ipfix_data_records)
