@@ -3,7 +3,7 @@ from functions import *
 from classes.template_set import TemplateSet
 from classes.data_set import DataSet
 import json
-
+from os import path, makedirs
 #Config Variables
 port = 5000
 ipfix_inf_filename = 'ipfix-information-elements.csv'
@@ -23,7 +23,8 @@ if __name__ == "__main__":
     sock.bind(('0.0.0.0', port))
     print(f"Listening on port {port}")
 
-
+    if not path.isdir('../out'):
+        makedirs('../out')
     json_outfile = open("../out/ipfix_out.json", "w+")
   
     #Loop to listen to input from socket server
