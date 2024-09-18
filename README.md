@@ -6,7 +6,6 @@ Welcome to py-pfix, my implementation of the [RFC 7011](https://datatracker.ietf
 
 This project is written wholy in Python and has been tested on Python 3.12. To get started simply clone the project, move to the src directory and run the main.py file. The server will listen on UDP port 5000 by default and create a file named ipfix_out.json which ipfix records will be written to.
 
-
 ### Get Started with Docker
 
 With docker installed and running on your system, spin up the project in one command by adjusting the arguments below to suit your needs:
