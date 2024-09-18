@@ -14,7 +14,7 @@ class IPFixCollector:
         self.buffer_max_len = buffer_max_len
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.create_out_dir()
-        self.json_outfile = open("../out/ipfix_out.json", "w+")
+        self.json_outfile = open("../out/ipfix_out.json", "a")
         self.inf_element_data = load_inf_elements(ipfix_inf_filename)
 
 
