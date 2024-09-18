@@ -1,4 +1,4 @@
-from functions import hexarr2int
+from utils import hexarr2int
 
 class TemplateSet:
 

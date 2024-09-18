@@ -1,4 +1,4 @@
-from functions import *
+from utils import *
 from math import floor as round_down
 
 class DataSet:
