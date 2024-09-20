@@ -34,12 +34,12 @@ class IPFixCollector:
         if all(key in record for key in ("sourceTransportPort", "sourceMacAddress", "destinationTransportPort", "postDestinationMacAddress", "flowStartSeconds", "flowEndSeconds", "octetDeltaCount", "ipVersion")):
             if all(key in record for key in ("sourceIPv4Address", "destinationIPv4Address")):
                 #Add ipv4 to database
-                query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv4Address']}', '{record['sourceTransportPort']}', '{record['sourceMacAddress']}', '{record['destinationIPv4Address']}', '{record['destinationTransportPort']}', '{record['postDestinationMacAddress']}', '{record['flowStartSeconds']}', '{record['flowEndSeconds']}', '{record['octetDeltaCount']}', '{record['ipVersion']}')"
+                query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv4Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv4Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
                 print(query)
                 self.cur.execute(query)
             elif all(key in record for key in ("sourceIPv6Address", "destinationIPv6Address")):
                 #Add ipv6 to database
-                query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv6Address']}', '{record['sourceTransportPort']}', '{record['sourceMacAddress']}', '{record['destinationIPv6Address']}', '{record['destinationTransportPort']}', '{record['postDestinationMacAddress']}', '{record['flowStartSeconds']}', '{record['flowEndSeconds']}', '{record['octetDeltaCount']}', '{record['ipVersion']}')"
+                query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv6Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv6Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
                 print(query)
                 self.cur.execute(query)
 
