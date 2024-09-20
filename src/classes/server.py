@@ -17,7 +17,7 @@ class IPFixCollector:
         self.create_out_dir()
         self.json_outfile = open("../out/ipfix_out.json", "a")
         self.inf_element_data = load_inf_elements(ipfix_inf_filename)
-        if not path.isdir('../out/ipfix.db'):
+        if not path.isfile('../out/ipfix.db'):
             self.db = sqlite3.connect('../out/ipfix.db')
             self.cur = self.db.cursor()
             self.cur.execute("CREATE TABLE ipfixRecords(sourceIP, sourcePort, sourceMAC, destIP, destPort, destMAC, flowStart, flowEnd, octetDeltaCount, ipVersion)")
