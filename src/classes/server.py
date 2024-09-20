@@ -1,5 +1,6 @@
 import socket
 import json
+import sqlite3
 from utils import parse_packet, load_inf_elements
 from os import path, makedirs
 from classes.template_set import TemplateSet
@@ -16,11 +17,28 @@ class IPFixCollector:
         self.create_out_dir()
         self.json_outfile = open("../out/ipfix_out.json", "a")
         self.inf_element_data = load_inf_elements(ipfix_inf_filename)
+        if not path.isdir('../out/ipfix.db'):
+            self.db = sqlite3.connect('../out/ipfix.db')
+            self.cur = self.db.cursor()
+            self.cur.execute("CREATE TABLE ipfixRecords(sourceIP, sourcePort, sourceMAC, destIP, destPort, destMAC, flowStart, flowEnd, octetDeltaCount, ipVersion)")
+        else:
+            self.db = sqlite3.connect('../out/ipfix.db')
+            self.cur = self.db.cursor()
 
 
     def create_out_dir(self):
         if not path.isdir('../out'):
             makedirs('../out')
+
+    def write_to_db(self, record):
+        if all(key in record for key in ("sourceTransportPort", "sourceMacAddress", "destinationTransportPort", "postDestinationMacAddress", "flowStartSeconds", "flowEndSeconds", "octetDeltaCount", "ipVersion")):
+            if all(key in record for key in ("sourceIPv4Address", "destinationIPv4Address")):
+                #Add ipv4 to database
+                self.cur.execute(f"INSERT INTO ipfixRecords VALUES ({record["sourceIPv4Address"]}, {record["sourceTransportPort"]}, {record["sourceMacAddress"]}, {record["destinationIPv4Address"]}, {record["destinationTransportPort"]}, {record["postDestinationMacAddress"]}, {record["flowStartSeconds"]}, {record["flowEndSeconds"]}, {record["octetDeltaCount"]}, {record["ipVersion"]})")
+            elif all(key in record for key in ("sourceIPv6Address", "destinationIPv6Address")):
+                #Add ipv6 to database
+                self.cur.execute(f"INSERT INTO ipfixRecords VALUES ({record["sourceIPv6Address"]}, {record["sourceTransportPort"]}, {record["sourceMacAddress"]}, {record["destinationIPv6Address"]}, {record["destinationTransportPort"]}, {record["postDestinationMacAddress"]}, {record["flowStartSeconds"]}, {record["flowEndSeconds"]}, {record["octetDeltaCount"]}, {record["ipVersion"]})")
+
 
     def start(self):
         self.sock.bind(('0.0.0.0', self.port))
@@ -49,6 +67,7 @@ class IPFixCollector:
                 if records:
                     for record in records:
                         ipfix_json = json.dumps(record)
+                        self.write_to_db(record)
                         self.json_outfile.write(ipfix_json)
                         self.json_outfile.write('\n')
                 else:
@@ -62,6 +81,7 @@ class IPFixCollector:
                 if records:
                     for record in records:
                         ipfix_json = json.dumps(record)
+                        self.write_to_db(record)
                         self.json_outfile.write(ipfix_json)
                         self.json_outfile.write('\n')
                     self.dataset_buffer.remove(data_set)
