@@ -34,10 +34,10 @@ class IPFixCollector:
         if all(key in record for key in ("sourceTransportPort", "sourceMacAddress", "destinationTransportPort", "postDestinationMacAddress", "flowStartSeconds", "flowEndSeconds", "octetDeltaCount", "ipVersion")):
             if all(key in record for key in ("sourceIPv4Address", "destinationIPv4Address")):
                 #Add ipv4 to database
-                self.cur.execute(f"INSERT INTO ipfixRecords VALUES ({record["sourceIPv4Address"]}, {record["sourceTransportPort"]}, {record["sourceMacAddress"]}, {record["destinationIPv4Address"]}, {record["destinationTransportPort"]}, {record["postDestinationMacAddress"]}, {record["flowStartSeconds"]}, {record["flowEndSeconds"]}, {record["octetDeltaCount"]}, {record["ipVersion"]})")
+                self.cur.execute(f"INSERT INTO ipfixRecords VALUES ({record['sourceIPv4Address']}, {record['sourceTransportPort']}, {record['sourceMacAddress']}, {record['destinationIPv4Address']}, {record['destinationTransportPort']}, {record['postDestinationMacAddress']}, {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})")
             elif all(key in record for key in ("sourceIPv6Address", "destinationIPv6Address")):
                 #Add ipv6 to database
-                self.cur.execute(f"INSERT INTO ipfixRecords VALUES ({record["sourceIPv6Address"]}, {record["sourceTransportPort"]}, {record["sourceMacAddress"]}, {record["destinationIPv6Address"]}, {record["destinationTransportPort"]}, {record["postDestinationMacAddress"]}, {record["flowStartSeconds"]}, {record["flowEndSeconds"]}, {record["octetDeltaCount"]}, {record["ipVersion"]})")
+                self.cur.execute(f"INSERT INTO ipfixRecords VALUES ({record['sourceIPv6Address']}, {record['sourceTransportPort']}, {record['sourceMacAddress']}, {record['destinationIPv6Address']}, {record['destinationTransportPort']}, {record['postDestinationMacAddress']}, {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})")
 
 
     def start(self):
@@ -56,12 +56,12 @@ class IPFixCollector:
             #Split the packet into header data,  data sets, template sets and option template sets
             packet_header_data, packet_sets = parse_packet(packet_data)
 
-            for set_data in packet_sets["template_sets"]:
+            for set_data in packet_sets['template_sets']:
                 template_set = TemplateSet(set_data)
                 template_set.parse()
                 self.templates[template_set.template_id] = template_set
             
-            for set_data in packet_sets["data_sets"]:
+            for set_data in packet_sets['data_sets']:
                 data_set = DataSet(set_data)
                 records = data_set.parse(self.templates, self.inf_element_data)
                 if records:
