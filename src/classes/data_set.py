@@ -37,7 +37,7 @@ class DataSet:
                     data = hexarr2int(packet_cursor, packet_cursor+data_len, self.set_bytes)
                     packet_cursor += data_len
 
-                    if abstract_data_type == "ipv4Address":
+                    if abstract_data_type == "ipv4Address" or abstract_data_type == "ipv6Address":
                         data = format_ip_address(data)
                     elif abstract_data_type == "macAddress":
                         data = '{:012}'.format(hex(data)[2:].upper())
