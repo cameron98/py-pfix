@@ -1,5 +1,4 @@
 import socket
-import json
 import sqlite3
 from utils import parse_packet, load_inf_elements
 from os import path, makedirs
@@ -11,11 +10,11 @@ class IPFixCollector:
     def __init__(self, port, ipfix_inf_filename, buffer_max_len) -> None:
         self.port = port
         self.dataset_buffer = []
+        self.db_buffer = []
         self.templates = {}
         self.buffer_max_len = buffer_max_len
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.create_out_dir()
-        self.json_outfile = open("../out/ipfix_out.json", "a")
         self.inf_element_data = load_inf_elements(ipfix_inf_filename)
         if not path.isfile('../out/ipfix.db'):
             self.db = sqlite3.connect('../out/ipfix.db')
@@ -45,6 +44,9 @@ class IPFixCollector:
                 self.cur.execute(query)
                 self.db.commit()
 
+    def flush_db_buffer(self):
+        for record in self.db_buffer:
+            self.write_to_db(record)
 
     def start(self):
         self.sock.bind(('0.0.0.0', self.port))
@@ -58,7 +60,7 @@ class IPFixCollector:
             while a < len(data):
                 packet_data.append("".join(data[a:a+2]))
                 a += 2
-            
+
             #Split the packet into header data,  data sets, template sets and option template sets
             packet_header_data, packet_sets = parse_packet(packet_data)
 
@@ -72,10 +74,7 @@ class IPFixCollector:
                 records = data_set.parse(self.templates, self.inf_element_data)
                 if records:
                     for record in records:
-                        ipfix_json = json.dumps(record)
                         self.write_to_db(record)
-                        self.json_outfile.write(ipfix_json)
-                        self.json_outfile.write('\n')
                 else:
                     if len(self.dataset_buffer) >= self.buffer_max_len:
                         self.dataset_buffer.pop(0)
@@ -86,9 +85,12 @@ class IPFixCollector:
                 records = data_set.parse(self.templates, self.inf_element_data)
                 if records:
                     for record in records:
-                        ipfix_json = json.dumps(record)
-                        self.write_to_db(record)
-                        self.json_outfile.write(ipfix_json)
-                        self.json_outfile.write('\n')
+                        self.db_buffer.append(record)
+                        print("Added record to database buffer")
                     self.dataset_buffer.remove(data_set)
-        
+
+            if len(self.db_buffer) > 150:
+                print("Flushing database buffer....")
+                self.flush_db_buffer()
+            else:
+                print(f"Not flushing db buffer. Current length {len(self.db_buffer)}")
