@@ -34,19 +34,32 @@ class IPFixCollector:
             if all(key in record for key in ("sourceIPv4Address", "destinationIPv4Address")):
                 #Add ipv4 to database
                 query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv4Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv4Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
-                print(query)
                 self.cur.execute(query)
                 self.db.commit()
             elif all(key in record for key in ("sourceIPv6Address", "destinationIPv6Address")):
                 #Add ipv6 to database
                 query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv6Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv6Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
-                print(query)
                 self.cur.execute(query)
                 self.db.commit()
 
     def flush_db_buffer(self):
-        for record in self.db_buffer:
-            self.write_to_db(record)
+
+        while self.db_buffer != []:
+
+            record = self.db_buffer.pop()
+
+            if all(key in record for key in ("sourceTransportPort", "sourceMacAddress", "destinationTransportPort", "postDestinationMacAddress", "flowStartSeconds", "flowEndSeconds", "octetDeltaCount", "ipVersion")):
+                if all(key in record for key in ("sourceIPv4Address", "destinationIPv4Address")):
+                    #Add ipv4 to database
+                    query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv4Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv4Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
+                    self.cur.execute(query)
+                    self.db.commit()
+                elif all(key in record for key in ("sourceIPv6Address", "destinationIPv6Address")):
+                    #Add ipv6 to database
+                    query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv6Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv6Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
+                    self.cur.execute(query)
+        self.db.commit()
+
 
     def start(self):
         self.sock.bind(('0.0.0.0', self.port))
@@ -68,29 +81,26 @@ class IPFixCollector:
                 template_set = TemplateSet(set_data)
                 template_set.parse()
                 self.templates[template_set.template_id] = template_set
+                print(f"Template set received with ID {template_set.template_id}")
             
             for set_data in packet_sets['data_sets']:
                 data_set = DataSet(set_data)
                 records = data_set.parse(self.templates, self.inf_element_data)
                 if records:
                     for record in records:
-                        self.write_to_db(record)
-                else:
-                    if len(self.dataset_buffer) >= self.buffer_max_len:
-                        self.dataset_buffer.pop(0)
-                    self.dataset_buffer.append(data_set)
-                    print(f"DataSet received with unknown template ID {data_set.template_id}")
+                        self.db_buffer.append(record)
 
-            for data_set in self.dataset_buffer:
+                else:
+                    self.dataset_buffer.append(set_data)
+                    print(f"DataSet received with unknown template ID {data_set.template_id}")
+            
+            for set_data in self.dataset_buffer:
+                data_set = DataSet(set_data)
                 records = data_set.parse(self.templates, self.inf_element_data)
                 if records:
                     for record in records:
-                        self.db_buffer.append(record)
-                        print("Added record to database buffer")
-                    self.dataset_buffer.remove(data_set)
-
-            if len(self.db_buffer) > 150:
-                print("Flushing database buffer....")
+                        self.db_buffer.append(record)       
+                        
+            if len(self.db_buffer) > self.buffer_max_len:
+                print(f"Records exceeded maximum buffer size {self.buffer_max_len}. Flushing buffer...")
                 self.flush_db_buffer()
-            else:
-                print(f"Not flushing db buffer. Current length {len(self.db_buffer)}")

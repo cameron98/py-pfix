@@ -8,7 +8,6 @@ class DataSet:
         self.template_id = hexarr2int(0, 2, self.set_bytes)
         self.set_length = hexarr2int(2, 4, self.set_bytes)
         self.data_records = []
-        print(f"Data Set received with template ID: {self.template_id}")
 
     def parse(self, templates, inf_element_data):
         if self.template_id not in templates:

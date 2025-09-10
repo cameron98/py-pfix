@@ -2,7 +2,7 @@ from classes.server import IPFixCollector
 #Config Variables
 port = 5000
 ipfix_inf_filename = 'ipfix-information-elements.csv'
-dataset_buffer_max_len = 100
+dataset_buffer_max_len = 512
 
 
 if __name__ == "__main__":

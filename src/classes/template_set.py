@@ -10,7 +10,6 @@ class TemplateSet:
         self.template_id = hexarr2int(4, 6, self.set_bytes)
         self.field_count = hexarr2int(6, 8, self.set_bytes)
         self.template = {}
-        print(f"Template Set received with Template ID: {self.template_id}")
 
     def parse(self):
 
