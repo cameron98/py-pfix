@@ -44,6 +44,9 @@ class IPFixCollector:
 
     def flush_db_buffer(self):
 
+        ipv4_query_values = []
+        ipv6_query_values = []
+
         while self.db_buffer != []:
 
             record = self.db_buffer.pop()
@@ -51,13 +54,20 @@ class IPFixCollector:
             if all(key in record for key in ("sourceTransportPort", "sourceMacAddress", "destinationTransportPort", "postDestinationMacAddress", "flowStartSeconds", "flowEndSeconds", "octetDeltaCount", "ipVersion")):
                 if all(key in record for key in ("sourceIPv4Address", "destinationIPv4Address")):
                     #Add ipv4 to database
-                    query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv4Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv4Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
-                    self.cur.execute(query)
-                    self.db.commit()
+                    # query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv4Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv4Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
+                    # self.cur.execute(query)
+                    ipv4_query_values.append((record['sourceIPv4Address'], record['sourceTransportPort'], record['sourceMacAddress'], record['destinationIPv4Address'], record['destinationTransportPort'], record['postDestinationMacAddress'], record['flowStartSeconds'], record['flowEndSeconds'], record['octetDeltaCount'], record['ipVersion'],))
                 elif all(key in record for key in ("sourceIPv6Address", "destinationIPv6Address")):
                     #Add ipv6 to database
-                    query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv6Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv6Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
-                    self.cur.execute(query)
+                    # query = f"INSERT INTO ipfixRecords VALUES ('{record['sourceIPv6Address']}', {record['sourceTransportPort']}, '{record['sourceMacAddress']}', '{record['destinationIPv6Address']}', {record['destinationTransportPort']}, '{record['postDestinationMacAddress']}', {record['flowStartSeconds']}, {record['flowEndSeconds']}, {record['octetDeltaCount']}, {record['ipVersion']})"
+                    # self.cur.execute(query)
+                    ipv6_query_values.append((record['sourceIPv6Address'], record['sourceTransportPort'], record['sourceMacAddress'], record['destinationIPv6Address'], record['destinationTransportPort'], record['postDestinationMacAddress'], record['flowStartSeconds'], record['flowEndSeconds'], record['octetDeltaCount'], record['ipVersion'],))
+
+        if len(ipv4_query_values) > 0:
+            self.cur.executemany("INSERT INTO ipfixRecords VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", ipv4_query_values)
+        if len(ipv6_query_values) > 0:
+            self.cur.executemany("INSERT INTO ipfixRecords VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", ipv6_query_values)
+
         self.db.commit()
 
 
@@ -99,7 +109,8 @@ class IPFixCollector:
                 records = data_set.parse(self.templates, self.inf_element_data)
                 if records:
                     for record in records:
-                        self.db_buffer.append(record)       
+                        self.db_buffer.append(record)
+                    self.dataset_buffer.remove(set_data)
                         
             if len(self.db_buffer) > self.buffer_max_len:
                 print(f"Records exceeded maximum buffer size {self.buffer_max_len}. Flushing buffer...")
