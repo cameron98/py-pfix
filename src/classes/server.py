@@ -91,7 +91,6 @@ class IPFixCollector:
                 template_set = TemplateSet(set_data)
                 template_set.parse()
                 self.templates[template_set.template_id] = template_set
-                print(f"Template set received with ID {template_set.template_id}")
             
             for set_data in packet_sets['data_sets']:
                 data_set = DataSet(set_data)
@@ -111,6 +110,12 @@ class IPFixCollector:
                     for record in records:
                         self.db_buffer.append(record)
                     self.dataset_buffer.remove(set_data)
+
+            #If length of buffer array is longer than max value, remove oldest records
+            dataset_buffer_len_diff = len(self.dataset_buffer) - self.buffer_max_len
+            if dataset_buffer_len_diff > 1:
+                print(f"Dataset buffer max length of {self.buffer_max_len} exceeded. Dataset buffer length {len(self.dataset_buffer)}. Clearing oldest records.")
+                self.dataset_buffer = self.dataset_buffer[(dataset_buffer_len_diff):]
                         
             if len(self.db_buffer) > self.buffer_max_len:
                 print(f"Records exceeded maximum buffer size {self.buffer_max_len}. Flushing buffer...")
